@@ -13,7 +13,7 @@ const LoadingPage: React.FC = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             // Navigate to dashboard after 3 seconds
-            //   navigate('/dashboard'); // Uncomment when using with router
+              navigate('/dashboard'); // Uncomment when using with router
         }, 3000)
 
         // Animate progress bar
