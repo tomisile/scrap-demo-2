@@ -86,7 +86,7 @@ const LoginPage: React.FC = () => {
         }}
       />
 
-      {/* Topology background pattern */}
+      Topology background pattern
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         {/* Multiple concentric topology lines */}
         {Array.from({ length: 10 }, (_, i) => (
@@ -95,10 +95,10 @@ const LoginPage: React.FC = () => {
             className="absolute border rounded-full"
             style={{
               borderColor: "#3B5700",
-              width: `${1796 - i * 128}px`,
-              height: `${1754 - i * 129}px`,
-              left: `${-164 + i * 65}px`,
-              top: `${-299 + i * 65}px`,
+            //   width: `${1796 - i * 128}px`,
+            //   height: `${1754 - i * 129}px`,
+            //   left: `${-164 + i * 65}px`,
+            //   top: `${-299 + i * 65}px`,
             }}
           />
         ))}
