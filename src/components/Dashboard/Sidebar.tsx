@@ -1,5 +1,5 @@
-// src/components/Dashboard/Sidebar.tsx
 import React from 'react';
+import { Camera, Video, Shield, FileText, Lock, Users, Settings, Smartphone, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -7,8 +7,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const menuItems = [
-    { icon: '📹', label: 'Security Cameras', active: true },
-    { icon: '📼', label: 'Recorded Footage', active: false },
+    { icon: '📹', label: 'Security Cameras', active: false },
+    { icon: '📼', label: 'Recorded Footage', active: true },
     { icon: '🚨', label: 'Security Alerts', active: false },
     { icon: '📋', label: 'Alert Log', active: false },
     { icon: '🔐', label: 'Manage Access', active: false },
@@ -18,16 +18,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   ];
 
   return (
-    <div className="w-64 bg-gray-800 h-screen flex flex-col">
+    <div className="teletraan-sidebar h-screen flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-xl font-bold text-white">TELETRAAN</h1>
+        <h1 className="teletraan-logo">TELETRAAN</h1>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3 className=" mb-3 teletraan-section-label">
             Surveillance
           </h3>
           <ul className="space-y-2">
@@ -35,10 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <li key={index}>
                 <a
                   href="#"
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                    item.active
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  className={`flex items-center px-3 py-2 teletraan-menu-item ${
+                    item.active ? 'active' : ''
                   }`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -51,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3 className=" mb-3 teletraan-section-label">
             Alerts & Logs
           </h3>
           <ul className="space-y-2">
@@ -59,10 +57,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <li key={index}>
                 <a
                   href="#"
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                    item.active
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  className={`flex items-center px-3 py-2 teletraan-menu-item ${
+                    item.active ? 'active' : ''
                   }`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -75,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3 className=" mb-3 teletraan-section-label">
             Access Control
           </h3>
           <ul className="space-y-2">
@@ -83,10 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <li key={index}>
                 <a
                   href="#"
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                    item.active
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  className={`flex items-center px-3 py-2 teletraan-menu-item ${
+                    item.active ? 'active' : ''
                   }`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -99,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h3 className=" mb-3 teletraan-section-label">
             Settings
           </h3>
           <ul className="space-y-2">
@@ -107,10 +101,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <li key={index}>
                 <a
                   href="#"
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                    item.active
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  className={`flex items-center px-3 py-2 teletraan-menu-item ${
+                    item.active ? 'active' : ''
                   }`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -124,17 +116,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       </nav>
 
       {/* Onboarding Section */}
-      <div className="p-4 border-t border-gray-700">
-        <div className="bg-gray-700 rounded-lg p-4 mb-4">
-          <h4 className="text-sm font-medium text-white mb-2">New to Teletraan?</h4>
-          <p className="text-xs text-gray-300 mb-3">
+      <div className="p-4 teletraan-promo">
+        <div className="bg-gray-700 p-4 mb-4">
+          <h4 className="teletraan-promo-title">New to Teletraan?</h4>
+          <p className="teletraan-promo-desc">
             A brief tour will guide you through the essentials
           </p>
           <div className="flex space-x-2">
-            <button className="text-xs text-gray-400 hover:text-white">
+            <button className="teletraan-button-secondary">
               Not Now
             </button>
-            <button className="text-xs bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded">
+            <button className="teletraan-button-primary">
               Start Tour
             </button>
           </div>
@@ -143,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         {/* Logout */}
         <button
           onClick={onLogout}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white rounded-md"
+          className="flex items-center w-full px-3 py-2 teletraan-menu-item"
         >
           <span className="mr-3">🚪</span>
           Log Out

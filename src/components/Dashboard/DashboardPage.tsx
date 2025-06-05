@@ -28,7 +28,7 @@ const DashboardPage: React.FC = () => {
         {/* Header */}
         <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Security Camera's</h1>
+            <h1 className="text-2xl font-bold text-white">Recorded Footage</h1>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-gray-400 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
