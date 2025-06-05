@@ -1,10 +1,9 @@
-"use client"
-
 import type React from "react"
 import { useEffect, useState } from "react"
 import { Camera } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-// import Image from "../../../public/avzdax-logo-text-crop.jpeg"
+import { authService } from '../../services/authService';
+
 
 const LoadingPage: React.FC = () => {
     const [progress, setProgress] = useState(0)
@@ -13,7 +12,11 @@ const LoadingPage: React.FC = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             // Navigate to dashboard after 3 seconds
-              navigate('/dashboard'); // Uncomment when using with router
+            if (authService.isAuthenticated()) {
+                navigate('/dashboard');
+            } else {
+                navigate('/');
+            }
         }, 3000)
 
         // Animate progress bar
