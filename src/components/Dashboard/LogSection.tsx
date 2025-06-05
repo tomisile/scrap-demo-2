@@ -16,7 +16,7 @@ const LogSection: React.FC<LogSectionProps> = ({ logs }) => {
   }, [logs]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
+    <div className="bg-gray-800 p-4">
       <h3 className="text-lg font-medium text-white mb-4">Activity Log</h3>
       <div
         ref={logContainerRef}

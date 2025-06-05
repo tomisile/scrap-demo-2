@@ -1,22 +1,21 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, User, Lock } from "lucide-react"
+import { authService } from '../../services/authService'
 
-// Mock auth service
-const authService = {
-  signIn: async (email: string, password: string) => {
-    return Promise.resolve()
-  },
-  signUp: async (email: string, password: string) => {
-    return Promise.resolve()
-  },
-  googleAuth: async () => {
-    return Promise.resolve()
-  },
-}
+// // Mock auth service
+// const authService = {
+//   signIn: async (email: string, password: string) => {
+//     return Promise.resolve()
+//   },
+//   signUp: async (email: string, password: string) => {
+//     return Promise.resolve()
+//   },
+//   googleAuth: async () => {
+//     return Promise.resolve()
+//   },
+// }
 
 const LoginPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signup")
@@ -37,18 +36,16 @@ const LoginPage: React.FC = () => {
     })
   }
 
-  const handleGoogleAuth = async () => {
-    setIsLoading(true)
-    try {
-      // Mock Google OAuth flow
-      await authService.googleAuth()
-      navigate("/loading")
-    } catch (error) {
-      console.error("Google auth failed:", error)
-    } finally {
-      setIsLoading(false)
-    }
+const handleGoogleAuth = async () => {
+  setIsLoading(true)
+  try {
+    await authService.googleAuth();
+    // This will redirect to Google, so the loading state will be cleared by page navigation
+  } catch (error) {
+    console.error("Google auth failed:", error)
+    setIsLoading(false)
   }
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -106,7 +103,7 @@ const LoginPage: React.FC = () => {
 
       <div className="flex min-h-screen w-full relative z-10">
         {/* Left Side - Branding */}
-        <div className="flex-1 flex items-start justify-center relative pt-[53px]">
+        <div className="flex-1 flex items-start justify-center relative pt-[53px] pl-12">
           <div
             className="relative"
             style={{
@@ -398,7 +395,7 @@ const LoginPage: React.FC = () => {
               </div>
 
               {activeTab === "signup" && (
-                <div>
+                <div className="pb-8">
                   <label
                     htmlFor="confirmPassword"
                     className="block text-sm mb-2"
@@ -450,7 +447,7 @@ const LoginPage: React.FC = () => {
               )}
 
               {activeTab === "signin" && (
-                <div className="text-right">
+                <div className="text-left pb-8">
                   <a
                     href="#"
                     className="text-sm hover:opacity-80"
@@ -468,7 +465,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full font-medium py-2 px-4 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+                className="block mx-auto w-56 font-medium py-2 px-4 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed mt-8"
                 style={{
                   background: "#A3A3A3",
                   color: "#262626",

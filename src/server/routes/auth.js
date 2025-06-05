@@ -1,72 +1,122 @@
-// server/routes/auth.js
+// src/server/routes/auth.js
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+// const passport = require('../config/passport');
+const passport = require('passport');
+
 const router = express.Router();
 
-// Mock user database
-const users = [
-  {
-    id: '1',
-    email: 'demo@teletraan.com',
-    password: 'demo123', // In real app, this would be hashed
-    name: 'Demo User'
-  }
-];
+// Google OAuth routes
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })
+);
 
-// Sign in
-router.post('/signin', (req, res) => {
-  const { email, password } = req.body;
+router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    try {
+      // Successful authentication
+      const token = jwt.sign(
+        {
+          id: req.user.id,
+          email: req.user.email,
+          name: req.user.name
+        },
+        process.env.JWT_SECRET || 'your-jwt-secret',
+        { expiresIn: '24h' }
+      );
 
-  // Find user
-  const user = users.find(u => u.email === email && u.password === password);
-  
-  if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
-
-  // Generate mock token
-  const token = `token_${user.id}_${Date.now()}`;
-
-  res.json({
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email
+      // Redirect to frontend with token
+      res.redirect(`http://localhost:5173/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Token generation failed:', error);
+      res.redirect('http://localhost:5173/?error=token_failed');
     }
+  }
+);
+
+// Traditional email/password routes
+router.post('/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // In a real app, verify credentials against database
+    // For demo, we'll accept any email/password
+    const user = {
+      id: '1',
+      name: 'Demo User',
+      email: email
+    };
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name },
+      process.env.JWT_SECRET || 'your-jwt-secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({ user, token });
+  } catch (error) {
+    res.status(400).json({ error: 'Sign in failed' });
+  }
+});
+
+router.post('/signup', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // In a real app, hash password and save to database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = {
+      id: Date.now().toString(),
+      name: 'New User',
+      email: email
+    };
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name },
+      process.env.JWT_SECRET || 'your-jwt-secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({ user, token });
+  } catch (error) {
+    res.status(400).json({ error: 'Sign up failed' });
+  }
+});
+
+// Get current user
+router.get('/me', authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
+
+// Logout
+router.post('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.json({ message: 'Logged out successfully' });
   });
 });
 
-// Sign up
-router.post('/signup', (req, res) => {
-  const { email, password } = req.body;
+// Middleware to verify JWT token
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  // Check if user already exists
-  const existingUser = users.find(u => u.email === email);
-  if (existingUser) {
-    return res.status(400).json({ error: 'User already exists' });
+  if (!token) {
+    return res.sendStatus(401);
   }
 
-  // Create new user
-  const newUser = {
-    id: String(users.length + 1),
-    email,
-    password, // In real app, this would be hashed
-    name: email.split('@')[0] // Use email prefix as name
-  };
-
-  users.push(newUser);
-
-  // Generate mock token
-  const token = `token_${newUser.id}_${Date.now()}`;
-
-  res.json({
-    token,
-    user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email
-    }
+  jwt.verify(token, process.env.JWT_SECRET || 'your-jwt-secret', (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
   });
-});
+}
 
 module.exports = router;

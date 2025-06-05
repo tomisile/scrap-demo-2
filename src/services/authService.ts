@@ -1,27 +1,45 @@
-// src/services/authService.ts
 interface User {
   name: string;
   email: string;
   id: string;
+  avatar?: string;
 }
 
 class AuthService {
   private baseUrl = 'http://localhost:3001/api';
 
   async googleAuth(): Promise<User> {
-    // Mock Google OAuth flow
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUser = {
-          id: '1',
-          name: 'Demo User',
-          email: 'demo@teletraan.com'
-        };
-        localStorage.setItem('auth_token', 'mock_token_123');
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        resolve(mockUser);
-      }, 1000);
-    });
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = `${this.baseUrl}/auth/google`;
+    
+    // This will never resolve as we're redirecting
+    return new Promise(() => {});
+  }
+
+  async handleGoogleCallback(token: string): Promise<User> {
+    try {
+      // Verify token with backend
+      const response = await fetch(`${this.baseUrl}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token verification failed');
+      }
+
+      const data = await response.json();
+      
+      // Store token and user data
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      return data.user;
+    } catch (error) {
+      console.error('Google callback handling failed:', error);
+      throw error;
+    }
   }
 
   async signIn(email: string, password: string): Promise<User> {
@@ -43,8 +61,8 @@ class AuthService {
       localStorage.setItem('user', JSON.stringify(data.user));
       return data.user;
     } catch (error) {
-      // Fallback to mock for demo
-      return this.mockAuth(email);
+      console.error('Sign in failed:', error);
+      throw error;
     }
   }
 
@@ -67,24 +85,9 @@ class AuthService {
       localStorage.setItem('user', JSON.stringify(data.user));
       return data.user;
     } catch (error) {
-      // Fallback to mock for demo
-      return this.mockAuth(email);
+      console.error('Sign up failed:', error);
+      throw error;
     }
-  }
-
-  private async mockAuth(email: string): Promise<User> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUser = {
-          id: '1',
-          name: 'Demo User',
-          email: email || 'demo@teletraan.com'
-        };
-        localStorage.setItem('auth_token', 'mock_token_123');
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        resolve(mockUser);
-      }, 1000);
-    });
   }
 
   getCurrentUser(): User | null {
@@ -93,12 +96,35 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
+    if (!token) return false;
+    
+    try {
+      // Check if token is expired
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp > Date.now() / 1000;
+    } catch {
+      return false;
+    }
   }
 
-  logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+  async logout(): Promise<void> {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await fetch(`${this.baseUrl}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+    }
   }
 }
 
