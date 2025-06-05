@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   return (
     <div className="teletraan-sidebar h-screen flex flex-col px-8">
       {/* Header */}
-      <div className="p-6 border-b border-gray-800">
+      <div className="p-6 border-b-2 border-gray-800">
         <h1 className="teletraan-logo">TELETRAAN</h1>
       </div>
 

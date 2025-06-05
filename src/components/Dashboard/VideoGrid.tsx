@@ -155,7 +155,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
         <div className="space-y-6">
             <div className="grid grid-cols-4 gap-4">
                 {Array.from({ length: 8 }, (_, index) => (
-                    <div key={index} className="bg-gray-800 rounded-lg overflow-hidden">
+                    <div key={index} className="bg-gray-800 overflow-hidden">
                         <div className="relative">
                             <video
                                 // ref={el => videoRefs.current[index] = el}
