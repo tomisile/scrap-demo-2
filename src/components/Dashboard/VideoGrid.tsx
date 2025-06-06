@@ -4,6 +4,8 @@ import { cvService } from '../../services/cvService.ts';
 
 interface VideoGridProps {
     onLogUpdate: (message: string) => void;
+    onVideoSelect: (videoIndex: number) => void;
+    activeAlgorithms: { [key: string]: boolean };
 }
 
 interface FaceDetection {
@@ -18,10 +20,11 @@ interface CVResult {
     timestamp: string;
 }
 
-const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
-    const [toggleStates, setToggleStates] = useState<boolean[]>(
-        new Array(8).fill(false)
-    );
+const VideoGrid: React.FC<VideoGridProps> = ({ 
+    onLogUpdate, 
+    onVideoSelect, 
+    activeAlgorithms 
+}) => {
     const [detectionResults, setDetectionResults] = useState<{
         [key: number]: CVResult;
     }>({});
@@ -29,26 +32,17 @@ const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const intervalRefs = useRef<(NodeJS.Timeout | null)[]>([]);
 
-    const handleToggle = async (index: number) => {
-        const newStates = [...toggleStates];
-        newStates[index] = !newStates[index];
-        setToggleStates(newStates);
-
-        if (newStates[index]) {
-            // Start facial recognition
-            onLogUpdate(`Video ${index + 1}: Facial recognition enabled`);
-            startFacialRecognition(index);
-        } else {
-            // Stop facial recognition
-            onLogUpdate(`Video ${index + 1}: Facial recognition disabled`);
-            stopFacialRecognition(index);
-        }
+    const handleVideoClick = (index: number) => {
+        onVideoSelect(index);
     };
 
-    const startFacialRecognition = async (videoIndex: number) => {
+    const startProcessing = async (videoIndex: number) => {
         const processVideo = async () => {
             try {
-                const result = await cvService.processVideo(`video${videoIndex + 1}.mp4`);
+                const result = await cvService.processVideo(
+                    `video${videoIndex + 1}.mp4`,
+                    activeAlgorithms
+                );
                 setDetectionResults(prev => ({
                     ...prev,
                     [videoIndex]: result
@@ -64,22 +58,21 @@ const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
                 drawDetections(videoIndex, result.faces);
             } catch (error) {
                 console.error(`Error processing video ${videoIndex + 1}:`, error);
-                onLogUpdate(`Video ${videoIndex + 1}: Processing error`);
             }
         };
 
-        // Process immediately and then every 5 seconds
-        await processVideo();
-        intervalRefs.current[videoIndex] = setInterval(processVideo, 5000);
+        if (Object.values(activeAlgorithms).some(active => active)) {
+            await processVideo();
+            intervalRefs.current[videoIndex] = setInterval(processVideo, 5000);
+        }
     };
 
-    const stopFacialRecognition = (videoIndex: number) => {
+    const stopProcessing = (videoIndex: number) => {
         if (intervalRefs.current[videoIndex]) {
             clearInterval(intervalRefs.current[videoIndex]);
             intervalRefs.current[videoIndex] = null;
         }
 
-        // Clear canvas
         const canvas = canvasRefs.current[videoIndex];
         if (canvas) {
             const ctx = canvas.getContext('2d');
@@ -87,41 +80,26 @@ const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
-
-        // Remove detection results
-        setDetectionResults(prev => {
-            const newResults = { ...prev };
-            delete newResults[videoIndex];
-            return newResults;
-        });
     };
 
     const drawDetections = (videoIndex: number, faces: FaceDetection[]) => {
         const canvas = canvasRefs.current[videoIndex];
-        const video = videoRefs.current[videoIndex];
-
-        if (!canvas || !video) return;
+        if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Clear previous drawings
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw bounding boxes and labels
         faces.forEach(face => {
             const [x, y, width, height] = face.box;
-
-            // Draw bounding box
             ctx.strokeStyle = '#4A90E2';
             ctx.lineWidth = 2;
             ctx.strokeRect(x, y, width, height);
 
-            // Draw label background
             ctx.fillStyle = 'rgba(74, 144, 226, 0.8)';
             ctx.fillRect(x, y - 25, width, 25);
 
-            // Draw label text
             ctx.fillStyle = 'white';
             ctx.font = '14px Arial';
             ctx.fillText(
@@ -143,78 +121,63 @@ const VideoGrid: React.FC<VideoGridProps> = ({ onLogUpdate }) => {
     };
 
     useEffect(() => {
-        // Cleanup intervals on unmount
+        // Start/stop processing based on active algorithms
+        for (let i = 0; i < 8; i++) {
+            if (Object.values(activeAlgorithms).some(active => active)) {
+                startProcessing(i);
+            } else {
+                stopProcessing(i);
+            }
+        }
+
         return () => {
             intervalRefs.current.forEach(interval => {
                 if (interval) clearInterval(interval);
             });
         };
-    }, []);
+    }, [activeAlgorithms]);
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
-                {Array.from({ length: 8 }, (_, index) => (
-                    <div key={index} className="bg-gray-800 overflow-hidden">
-                        <div className="relative">
-                            <video
-                                // ref={el => videoRefs.current[index] = el}
-                                ref={(el) => {
-                                    videoRefs.current[index] = el;
-                                }}
-                                className="w-full h-48 object-cover"
-                                controls
-                                loop
-                                muted
-                                autoPlay
-                                onLoadedMetadata={() => updateCanvasSize(index)}
-                                onResize={() => updateCanvasSize(index)}
-                            >
-                                <source
-                                    src={`/src/assets/videos/video${index + 1}.mp4`}
-                                    type="video/mp4"
-                                />
-                                Your browser does not support the video tag.
-                            </video>
-                            <canvas
-                                // ref={el => canvasRefs.current[index] = el}
-                                ref={(el) => {
-                                    canvasRefs.current[index] = el;
-                                }}
-                                className="absolute top-0 left-0 pointer-events-none"
-                                style={{ width: '100%', height: '100%' }}
+        <div className="grid grid-cols-4 gap-4">
+            {Array.from({ length: 8 }, (_, index) => (
+                <div 
+                    key={index} 
+                    className="bg-gray-800 overflow-hidden cursor-pointer hover:ring-2 hover:ring-gray-700 transition-all"
+                    onClick={() => handleVideoClick(index)}
+                >
+                    <div className="relative">
+                        <video
+                            ref={(el) => {
+                                videoRefs.current[index] = el;
+                            }}
+                            className="w-full h-48 object-cover"
+                            loop
+                            muted
+                            autoPlay
+                            onLoadedMetadata={() => updateCanvasSize(index)}
+                            onResize={() => updateCanvasSize(index)}
+                        >
+                            <source
+                                src={`/src/assets/videos/video${index + 1}.mp4`}
+                                type="video/mp4"
                             />
-                        </div>
-                        <div className="p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-white text-sm font-medium">
-                                    Camera {index + 1}
-                                </span>
-                                <label className="flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={toggleStates[index]}
-                                        onChange={() => handleToggle(index)}
-                                        className="sr-only"
-                                    />
-                                    <div
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${toggleStates[index] ? 'bg-blue-600' : 'bg-gray-600'
-                                            }`}
-                                    >
-                                        <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${toggleStates[index] ? 'translate-x-6' : 'translate-x-1'
-                                                }`}
-                                        />
-                                    </div>
-                                    <span className="ml-2 text-sm text-gray-300">
-                                        Facial Recognition
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
+                            Your browser does not support the video tag.
+                        </video>
+                        <canvas
+                            ref={(el) => {
+                                canvasRefs.current[index] = el;
+                            }}
+                            className="absolute top-0 left-0 pointer-events-none"
+                            style={{ width: '100%', height: '100%' }}
+                        />
                     </div>
-                ))}
-            </div>
+                    <div className="p-4">
+                        <span className="text-gray-500 text-xs font-medium">
+                            Camera {index + 1}
+                        </span>
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };
