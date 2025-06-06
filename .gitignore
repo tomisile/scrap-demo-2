@@ -26,6 +26,8 @@ dist-ssr
 # Video assets
 src/assets/videos/*.mp4
 src/assets/videos/*.webm
+public/videos/*.mp4
+public/videos/*.webm
 
 # Environment variables
 .env
