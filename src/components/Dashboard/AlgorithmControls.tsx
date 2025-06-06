@@ -72,12 +72,12 @@ const AlgorithmControls: React.FC<AlgorithmControlsProps> = ({
                                         <div
                                             className={`w-10 h-5 rounded-full transition-colors ${
                                                 activeAlgorithms[algorithm.key] 
-                                                    ? 'bg-blue-600' 
-                                                    : 'bg-gray-600'
+                                                    ? 'bg-gray-600' 
+                                                    : 'bg-gray-700'
                                             }`}
                                         >
                                             <div
-                                                className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                                                className={`w-4 h-4 bg-gray-500 rounded-full shadow transform transition-transform ${
                                                     activeAlgorithms[algorithm.key] 
                                                         ? 'translate-x-5' 
                                                         : 'translate-x-0.5'

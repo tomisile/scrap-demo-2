@@ -142,7 +142,7 @@ const FullScreenVideo: React.FC<FullScreenVideoProps> = ({
                     onResize={updateCanvasSize}
                 >
                     <source
-                        src={`/src/assets/videos/video${videoIndex + 1}.mp4`}
+                        src={`/videos/video${videoIndex + 1}.mp4`}
                         type="video/mp4"
                     />
                     Your browser does not support the video tag.

@@ -158,7 +158,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
                             onResize={() => updateCanvasSize(index)}
                         >
                             <source
-                                src={`/src/assets/videos/video${index + 1}.mp4`}
+                                src={`/videos/video${index + 1}.mp4`}
                                 type="video/mp4"
                             />
                             Your browser does not support the video tag.
