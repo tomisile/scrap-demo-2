@@ -13,8 +13,12 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true // Important for sessions/cookies
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173'
+  ],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -25,8 +29,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // TODO: Set to true in production with HTTPS
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
   }
 }));
 
@@ -43,6 +48,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'TELETRAAN API is running' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {  // Bind to all interfaces
   console.log(`Server running on port ${PORT}`);
 });

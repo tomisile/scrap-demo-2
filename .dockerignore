@@ -1,0 +1,7 @@
+public/videos/*.mp4
+public/videos/*.webm
+
+.gitignore
+node_modules/
+web_app_repo_structure.txt
+README.md

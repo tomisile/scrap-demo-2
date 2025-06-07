@@ -1,0 +1,46 @@
+networks:
+  cv-network:
+    external: true
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    environment:
+      - VITE_API_URL=http://localhost:3001/api
+    networks:
+      - cv-network
+
+  backend:
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - CV_SERVICE_URL=http://blacklist-monitor:8000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - ./src/server/.env
+    volumes:
+      - ./src/server:/app
+      - /app/node_modules
+    networks:
+      - cv-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - cv-network

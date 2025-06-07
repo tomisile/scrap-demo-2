@@ -6,7 +6,7 @@ interface User {
 }
 
 class AuthService {
-  private baseUrl = 'http://localhost:3001/api';
+  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
   async googleAuth(): Promise<User> {
     // Redirect to backend Google OAuth endpoint
